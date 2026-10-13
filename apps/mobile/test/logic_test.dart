@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spots_mobile/logic/format.dart';
-import 'package:spots_mobile/logic/geo.dart';
-import 'package:spots_mobile/logic/happenings.dart';
-import 'package:spots_mobile/models/happening.dart';
+import 'package:spots/logic/format.dart';
+import 'package:spots/logic/geo.dart';
+import 'package:spots/logic/happenings.dart';
+import 'package:spots/models/happening.dart';
 
 Happening event({
   String id = 'e',

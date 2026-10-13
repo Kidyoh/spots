@@ -31,7 +31,7 @@ class _SavedScreenState extends State<SavedScreen> {
     Widget body;
     if (!state.canPersonalize) {
       body = EmptyState(
-        emoji: '💌',
+        icon: Icons.favorite_border_rounded,
         title: 'Your lists live here',
         body: 'Sign in with Google to save spots you want to try and keep a rated log of the places you\'ve been.',
         action: 'Sign in',
@@ -109,7 +109,7 @@ class _WantToGo extends StatelessWidget {
     final state = AppScope.of(context);
     if (spots.isEmpty) {
       return EmptyState(
-        emoji: '🔖',
+        icon: Icons.bookmark_border_rounded,
         title: 'Nothing saved yet',
         body: 'Tap the bookmark on any spot and it lands here — your shortlist for the next date.',
         action: 'Start browsing',
@@ -194,9 +194,19 @@ class _SpotRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '${spot.area}${price != null ? ' · $price' : ''} · ★ ${spot.stars.toStringAsFixed(1)}',
-                      style: const TextStyle(fontSize: 12.5, color: Palette.muted),
+                    Row(
+                      children: [
+                        const Icon(Icons.star_rounded, size: 14, color: Palette.starFill),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            '${spot.stars.toStringAsFixed(1)} · ${spot.area}${price != null ? ' · $price' : ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12.5, color: Palette.muted),
+                          ),
+                        ),
+                      ],
                     ),
                     ?footer,
                   ],
@@ -221,7 +231,7 @@ class _BeenHere extends StatelessWidget {
     final state = AppScope.of(context);
     if (visits.isEmpty) {
       return EmptyState(
-        emoji: '🥂',
+        icon: Icons.local_bar_rounded,
         title: 'No dates logged yet',
         body: 'Mark a spot as "Been here" to start our log — then rate it and jot down what to order next time.',
         action: 'Find a spot',

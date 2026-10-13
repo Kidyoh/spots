@@ -1,5 +1,5 @@
-name: spots_mobile
-description: "Where to next — date spots around Addis, as a Flutter app."
+name: spots
+description: "spots — date spots around Addis."
 publish_to: "none"
 version: 0.1.0+1
 

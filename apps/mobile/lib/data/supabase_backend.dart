@@ -9,7 +9,7 @@ import 'backend.dart';
 
 /// Must also be listed under Supabase → Auth → URL Configuration → Redirect
 /// URLs, and matches the intent filter / URL scheme in the platform folders.
-const authRedirect = 'io.spots.spotsmobile://login-callback';
+const authRedirect = 'spots://login-callback';
 
 /// The same queries `apps/web/src/lib/*.ts` makes, against the same RLS.
 class SupabaseBackend extends Backend {

@@ -12,8 +12,7 @@ import '../theme/tokens.dart';
 const _tileUrl = String.fromEnvironment('MAP_TILE_URL', defaultValue: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
 const _attribution = String.fromEnvironment('MAP_ATTRIBUTION', defaultValue: '© OpenStreetMap contributors');
 
-TileLayer basemapTiles() =>
-    TileLayer(urlTemplate: _tileUrl, userAgentPackageName: 'io.spots.spots_mobile', maxZoom: 19);
+TileLayer basemapTiles() => TileLayer(urlTemplate: _tileUrl, userAgentPackageName: 'io.spots', maxZoom: 19);
 
 Widget mapAttribution() =>
     const SimpleAttributionWidget(source: Text(_attribution), backgroundColor: Color(0xCCFFFEFB));

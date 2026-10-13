@@ -10,7 +10,7 @@ class BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Where to next',
+      label: 'spots',
       image: true,
       child: SizedBox.square(
         dimension: size,

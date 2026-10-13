@@ -1,4 +1,4 @@
-package io.spots.spots_mobile
+package io.spots
 
 import io.flutter.embedding.android.FlutterActivity
 

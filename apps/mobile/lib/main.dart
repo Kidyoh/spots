@@ -49,12 +49,7 @@ class SpotsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScope(
       state: state,
-      child: MaterialApp(
-        title: 'Where to next',
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(),
-        home: const Shell(),
-      ),
+      child: MaterialApp(title: 'spots', debugShowCheckedModeBanner: false, theme: buildTheme(), home: const Shell()),
     );
   }
 }

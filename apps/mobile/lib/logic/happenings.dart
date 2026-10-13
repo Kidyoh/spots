@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show IconData, Icons;
+
 import '../models/happening.dart';
 
 /// Presentation logic for events, ported from `apps/web/src/lib/happenings.ts`.
@@ -132,13 +134,13 @@ List<Happening> dedupe(List<Happening> list) {
 }
 
 /// The category chips, and which extracted tags each covers.
-const eventKinds = <(String key, String label, String emoji, List<String> tags)>[
-  ('music', 'Music', '🎶', ['music']),
-  ('art', 'Art & film', '🎨', ['art', 'film']),
-  ('food', 'Food', '🍲', ['food']),
-  ('market', 'Markets', '🛍️', ['market']),
-  ('outdoors', 'Outdoors', '🌿', ['outdoors']),
-  ('talk', 'Talks', '🎤', ['talk']),
+final eventKinds = <(String key, String label, IconData icon, List<String> tags)>[
+  ('music', 'Music', Icons.music_note_rounded, ['music']),
+  ('art', 'Art & film', Icons.palette_rounded, ['art', 'film']),
+  ('food', 'Food', Icons.restaurant_menu_rounded, ['food']),
+  ('market', 'Markets', Icons.storefront_rounded, ['market']),
+  ('outdoors', 'Outdoors', Icons.park_rounded, ['outdoors']),
+  ('talk', 'Talks', Icons.mic_rounded, ['talk']),
 ];
 
 enum EventWhen {

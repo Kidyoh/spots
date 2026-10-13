@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spots_mobile/data/demo_backend.dart';
-import 'package:spots_mobile/main.dart';
-import 'package:spots_mobile/state/app_state.dart';
+import 'package:spots/data/demo_backend.dart';
+import 'package:spots/main.dart';
+import 'package:spots/state/app_state.dart';
 
 void main() {
   // 'spots:swiped' hides the looping swipe hint so pumpAndSettle can settle
@@ -19,13 +19,26 @@ void main() {
     await tester.pumpWidget(SpotsApp(state: state));
     await tester.pumpAndSettle();
 
-    expect(find.text('Where to next'), findsOneWidget);
+    expect(find.text('spots'), findsOneWidget);
     expect(state.filteredSpots, isNotEmpty);
     final first = state.currentSpot!;
     expect(find.text(first.name), findsWidgets);
 
     // swipe the top card away → the next spot is on top
     await tester.fling(find.text(first.name).last, const Offset(-300, 0), 1500);
+    await tester.pumpAndSettle();
+    expect(state.deckIndex, 1);
+
+    // a short drag springs back without moving on
+    await tester.drag(find.text(state.currentSpot!.name).last, const Offset(-40, 0));
+    await tester.pumpAndSettle();
+    expect(state.deckIndex, 1);
+
+    // back brings the previous card in again
+    await tester.tap(find.byTooltip('Previous'));
+    await tester.pumpAndSettle();
+    expect(state.deckIndex, 0);
+    await tester.fling(find.text(first.name).last, const Offset(300, 0), 1500);
     await tester.pumpAndSettle();
     expect(state.deckIndex, 1);
 

@@ -47,7 +47,7 @@ class EventsScreen extends StatelessWidget {
         SliverFillRemaining(
           hasScrollBody: false,
           child: EmptyState(
-            emoji: '📡',
+            icon: Icons.wifi_off_rounded,
             title: "Couldn't load events",
             body: 'Check your connection and try again.',
             action: 'Try again',
@@ -61,14 +61,14 @@ class EventsScreen extends StatelessWidget {
           hasScrollBody: false,
           child: state.eventFiltersOn
               ? EmptyState(
-                  emoji: '🗓️',
+                  icon: Icons.event_busy_rounded,
                   title: 'Nothing matches',
                   body: 'No events match these filters.',
                   action: 'Clear filters',
                   onAction: state.clearEventFilters,
                 )
               : const EmptyState(
-                  emoji: '🌙',
+                  icon: Icons.nights_stay_rounded,
                   title: 'Nothing on the calendar yet',
                   body: 'We list events as the city announces them — most land only a few days ahead.',
                 ),
@@ -182,15 +182,15 @@ class _FiltersHeader extends SliverPersistentHeaderDelegate {
               children: [
                 FilterChipPill(
                   label: 'Free',
-                  leading: '🎟️',
+                  leading: Icons.local_activity_rounded,
                   selected: state.eventFreeOnly,
                   onTap: state.toggleFreeOnly,
                 ),
-                for (final (key, label, emoji, _) in eventKinds) ...[
+                for (final (key, label, icon, _) in eventKinds) ...[
                   const SizedBox(width: 8),
                   FilterChipPill(
                     label: label,
-                    leading: emoji,
+                    leading: icon,
                     selected: state.eventKindsOn.contains(key),
                     onTap: () => state.toggleEventKind(key),
                   ),

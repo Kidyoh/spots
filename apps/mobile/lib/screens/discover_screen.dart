@@ -34,7 +34,7 @@ class DiscoverScreen extends StatelessWidget {
       );
     } else if (state.spotsError != null) {
       body = EmptyState(
-        emoji: '📡',
+        icon: Icons.wifi_off_rounded,
         title: "Couldn't load spots",
         body: "We couldn't reach the server. Check your connection and try again.",
         action: 'Try again',
@@ -42,7 +42,7 @@ class DiscoverScreen extends StatelessWidget {
       );
     } else if (spots.isEmpty) {
       body = EmptyState(
-        emoji: '🧭',
+        icon: Icons.explore_off_rounded,
         title: 'Nothing matches',
         body: 'No spots match these filters — try widening the area or price.',
         action: 'Clear filters',
@@ -106,7 +106,7 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Where to next', style: Theme.of(context).textTheme.headlineSmall?.copyWith(height: 1.1)),
+                Text('spots', style: Theme.of(context).textTheme.headlineSmall?.copyWith(height: 1.1)),
                 const SizedBox(height: 2),
                 Text(
                   count == null ? 'Date spots around Addis' : '$count places · from the people who actually went',
@@ -222,7 +222,7 @@ class _CategoryChips extends StatelessWidget {
             return Center(
               child: FilterChipPill(
                 label: c.label,
-                leading: c.emoji,
+                leading: c.icon,
                 selected: state.selectedCategories.contains(c.key),
                 onTap: () => state.toggleCategory(c.key),
               ),

@@ -1,6 +1,6 @@
 {
-    "name": "Where to next",
-    "short_name": "Where to next",
+    "name": "spots",
+    "short_name": "spots",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FBF9F4",

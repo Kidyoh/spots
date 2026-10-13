@@ -153,7 +153,7 @@ class FilterChipPill extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final String? leading;
+  final IconData? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +180,10 @@ class FilterChipPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (leading != null) ...[Text(leading!, style: const TextStyle(fontSize: 14)), const SizedBox(width: 6)],
+              if (leading != null) ...[
+                Icon(leading, size: 17, color: selected ? Palette.gold : Palette.green),
+                const SizedBox(width: 6),
+              ],
               Text(
                 label,
                 style: TextStyle(
@@ -339,14 +342,14 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.body,
     this.action,
     this.onAction,
   });
 
-  final String emoji;
+  final IconData icon;
   final String title;
   final String body;
   final String? action;
@@ -360,7 +363,12 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 46)),
+            Container(
+              width: 84,
+              height: 84,
+              decoration: const BoxDecoration(color: Palette.press, shape: BoxShape.circle),
+              child: Icon(icon, size: 38, color: Palette.green),
+            ),
             const SizedBox(height: 14),
             Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
             const SizedBox(height: 8),

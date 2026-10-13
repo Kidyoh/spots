@@ -1,4 +1,4 @@
-# Where to next — Flutter app
+# spots — Flutter app
 
 A native Android/iOS (and web) take on the spots frontend. Same Supabase
 project, same tables and RLS, same warm editorial look as `apps/web`, built
@@ -9,8 +9,8 @@ around a phone in one hand.
 ## What's in it
 
 - **Discover** — the "surprise me" deck as a stack of swipeable cards. Swipe
-  either way to move on, ↺ to go back, 🎲 *Surprise me* to jump somewhere
-  random. Category chips float above the deck; search, area, price and sort
+  either way to move on, the back button to return, *Surprise me* to jump
+  somewhere random. Category chips (with icons) float above the deck; search, area, price and sort
   live in a pull-up sheet.
 - **Spot page** — the cover expands from the card into a full-bleed header
   with the rest pulled up over it as a sheet: watch the TikTok review, Maps,
@@ -57,7 +57,7 @@ flutter run \
 ### Google sign-in
 
 The app signs in through Supabase OAuth and comes back on the deep link
-`io.spots.spotsmobile://login-callback` (already wired in
+`spots://login-callback` (already wired in
 `AndroidManifest.xml` and `Info.plist`). Add that URL under
 **Supabase → Authentication → URL Configuration → Redirect URLs**.
 
