@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- --bg from the web's styles.css: warm cream, never pure white -->
+    <color name="launch_background">#FBF9F4</color>
+</resources>

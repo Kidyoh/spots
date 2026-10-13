@@ -1,0 +1,35 @@
+{
+    "name": "Where to next",
+    "short_name": "Where to next",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FBF9F4",
+    "theme_color": "#3E5C44",
+    "description": "Date spots around Addis \u2014 sourced from the people who actually went.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

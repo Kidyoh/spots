@@ -11,6 +11,9 @@ Bun-workspace monorepo:
 - **`apps/cli`** — `spots`, the ingestion pipeline and analytics reporting.
 - **`apps/web`** — TanStack Router SPA: the live frontend (spot carousel, "Near me",
   saved spots, Google sign-in, feedback collector, usage analytics).
+- **`apps/mobile`** — Flutter app (Android/iOS/web) on the same Supabase project: swipe
+  deck, events, Near me map, saved lists. Runs on demo data without keys; see
+  `apps/mobile/README.md`.
 
 ## Setup
 

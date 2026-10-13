@@ -1,0 +1,43 @@
+name: spots_mobile
+description: "Where to next — date spots around Addis, as a Flutter app."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  confetti: ^0.8.0
+  flutter:
+    sdk: flutter
+  flutter_map: ^8.3.2
+  geolocator: ^14.1.1
+  latlong2: ^0.10.1
+  share_plus: ^13.3.1
+  shared_preferences: ^2.5.6
+  supabase_flutter: ^2.18.3
+  url_launcher: ^6.3.3
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/data/
+
+  # Quicksand, the same face as the web app. Static instances cut from the
+  # variable font (weights 400–700) so FontWeight maps to a real cut.
+  fonts:
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Quicksand-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Quicksand-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 700
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
