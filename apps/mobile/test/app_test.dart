@@ -28,6 +28,8 @@ void main() {
     await tester.fling(find.text(first.name).last, const Offset(-300, 0), 1500);
     await tester.pumpAndSettle();
     expect(state.deckIndex, 1);
+    // the counter shows the whole total, not a truncated one
+    expect(find.text('2 of ${state.filteredSpots.length}'), findsOneWidget);
 
     // a short drag springs back without moving on
     await tester.drag(find.text(state.currentSpot!.name).last, const Offset(-40, 0));

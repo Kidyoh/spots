@@ -245,60 +245,67 @@ class _DeckControls extends StatelessWidget {
     final saved = state.isSaved(current.placeId);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      child: Row(
-        children: [
-          RoundIconButton(icon: Icons.undo_rounded, tooltip: 'Previous', size: 48, onPressed: () => state.step(-1)),
-          const SizedBox(width: 10),
-          Flexible(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              transitionBuilder: (c, a) => FadeTransition(
-                opacity: a,
-                child: SlideTransition(
-                  position: Tween(begin: const Offset(0, 0.4), end: Offset.zero).animate(a),
-                  child: c,
-                ),
-              ),
-              child: Text.rich(
-                key: ValueKey(state.deckIndex),
-                TextSpan(
-                  children: [
+      child: LayoutBuilder(
+        builder: (context, box) => Row(
+          children: [
+            RoundIconButton(icon: Icons.undo_rounded, tooltip: 'Previous', size: 48, onPressed: () => state.step(-1)),
+            const SizedBox(width: 10),
+            // takes all the free space in the row and, on a very narrow phone,
+            // shrinks the text rather than cutting off the total
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  transitionBuilder: (c, a) => FadeTransition(
+                    opacity: a,
+                    child: SlideTransition(
+                      position: Tween(begin: const Offset(0, 0.4), end: Offset.zero).animate(a),
+                      child: c,
+                    ),
+                  ),
+                  child: Text.rich(
+                    key: ValueKey(state.deckIndex),
                     TextSpan(
-                      text: '${state.deckIndex % n + 1}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: Palette.ink),
+                      children: [
+                        TextSpan(
+                          text: '${state.deckIndex % n + 1}',
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: Palette.ink),
+                        ),
+                        const TextSpan(
+                          text: ' of ',
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
+                        TextSpan(text: '$n'),
+                      ],
                     ),
-                    const TextSpan(
-                      text: ' of ',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                    TextSpan(text: '$n'),
-                  ],
+                    maxLines: 1,
+                    style: const TextStyle(color: Palette.muted, fontSize: 14),
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: const TextStyle(color: Palette.muted, fontSize: 14),
               ),
             ),
-          ),
-          const Spacer(),
-          RoundIconButton(
-            icon: saved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-            tooltip: saved ? 'Remove from Want to go' : 'Save to Want to go',
-            size: 48,
-            active: saved,
-            onPressed: () async {
-              HapticFeedback.mediumImpact();
-              final ok = await state.toggleSaved(current);
-              if (!ok && context.mounted) {
-                await showAccountSheet(context, reason: 'Sign in to save spots to your "Want to go" list.');
-              }
-            },
-          ),
-          const SizedBox(width: 10),
-          // small phones keep the die and drop the label
-          DiceButton(onRoll: state.surprise, compact: MediaQuery.sizeOf(context).width < 360),
-        ],
+            const SizedBox(width: 8),
+            RoundIconButton(
+              icon: saved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+              tooltip: saved ? 'Remove from Want to go' : 'Save to Want to go',
+              size: 48,
+              active: saved,
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                final ok = await state.toggleSaved(current);
+                if (!ok && context.mounted) {
+                  await showAccountSheet(context, reason: 'Sign in to save spots to your "Want to go" list.');
+                }
+              },
+            ),
+            const SizedBox(width: 10),
+            // narrow phones keep the die and drop the label, so the counter
+            // always has room for its total
+            DiceButton(onRoll: state.surprise, compact: box.maxWidth < 365),
+          ],
+        ),
       ),
     );
   }
