@@ -84,7 +84,8 @@ class DiscoverScreen extends StatelessWidget {
           itemCount: spots.length,
           index: i,
           keyOf: (j) => spots[j].placeId,
-          onSwiped: (_) => state.step(1),
+          // like the web: left → next, right → previous
+          onSwiped: (dir) => state.step(dir == AxisDirection.left ? 1 : -1),
           itemBuilder: (context, j) {
             final s = spots[j];
             return SpotCard(

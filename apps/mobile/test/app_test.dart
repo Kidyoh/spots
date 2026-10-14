@@ -40,7 +40,15 @@ void main() {
     await tester.tap(find.byTooltip('Previous'));
     await tester.pumpAndSettle();
     expect(state.deckIndex, 0);
+    // like the web: swipe right → previous (wrapping round), swipe left → next
+    final n = state.filteredSpots.length;
     await tester.fling(find.text(first.name).last, const Offset(300, 0), 1500);
+    await tester.pumpAndSettle();
+    expect(state.deckIndex, n - 1);
+    await tester.fling(find.text(state.currentSpot!.name).last, const Offset(-300, 0), 1500);
+    await tester.pumpAndSettle();
+    expect(state.deckIndex, 0);
+    await tester.fling(find.text(first.name).last, const Offset(-300, 0), 1500);
     await tester.pumpAndSettle();
     expect(state.deckIndex, 1);
 

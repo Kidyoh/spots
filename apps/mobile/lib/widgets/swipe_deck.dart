@@ -10,9 +10,11 @@ import 'package:flutter/services.dart';
 /// — settles into place. Short of the threshold it springs back without
 /// wobbling.
 ///
-/// Swiping either way moves forward. Going back is the parent's job: it
-/// lowers [index] and the old card glides back in from the side it left by.
-/// Any other jump (Surprise me) settles the new card in with a small pop.
+/// Like the web deck (lib/swipe.ts): swipe left for the next card, right for
+/// the previous one. While a drag heads right, the card waiting underneath is
+/// the previous one, so whichever way it goes the card that takes over is
+/// already in place. The back button glides the previous card in from the
+/// left; any other jump (Surprise me) settles the new card in with a pop.
 ///
 /// Every card keeps one widget identity for as long as it is in the stack
 /// (same type, keyed by [keyOf]), so promoting a card never rebuilds it or
@@ -56,6 +58,23 @@ class _SwipeDeckState extends State<SwipeDeck> with TickerProviderStateMixin {
 
   /// Set while a card is flying off, until the parent advances [index].
   bool _leaving = false;
+
+  /// Which neighbour waits underneath: +1 the next card (at rest, or dragging
+  /// left), -1 the previous one (dragging right).
+  int _peekDir = 1;
+  bool _inUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _drag.addListener(() {
+      final dir = _drag.value.dx > 0 ? -1 : 1;
+      if (dir == _peekDir) return;
+      _peekDir = dir;
+      if (!_inUpdate && mounted) setState(() {});
+    });
+  }
+
   bool _pastThreshold = false;
   Size _size = const Size(360, 600);
 
@@ -65,18 +84,24 @@ class _SwipeDeckState extends State<SwipeDeck> with TickerProviderStateMixin {
     if (old.index == widget.index && old.itemCount == widget.itemCount) return;
     final n = widget.itemCount;
     final forward = n > 0 && (old.index + 1) % n == widget.index % n;
-    if (_leaving && forward) {
-      // the card that flew off is no longer on top; the new top starts at rest
-      _leaving = false;
-      _drag.value = Offset.zero;
-      return;
-    }
-    _leaving = false;
-    _settle.stop();
-    _drag.value = Offset.zero;
     final back = n > 1 && (old.index - 1) % n == widget.index % n && old.itemCount == n;
-    _entry = back ? (_lastExit == AxisDirection.left ? _Entry.fromLeft : _Entry.fromRight) : _Entry.pop;
-    _enter.forward(from: 0);
+    _inUpdate = true; // rebuilding anyway; the drag listener needn't setState
+    try {
+      if (_leaving && (forward || back)) {
+        // the card that flew off is gone; the one beneath it is the new top,
+        // already in place, and starts at rest
+        _leaving = false;
+        _drag.value = Offset.zero;
+        return;
+      }
+      _leaving = false;
+      _settle.stop();
+      _drag.value = Offset.zero;
+      _entry = back ? _Entry.fromLeft : _Entry.pop;
+      _enter.forward(from: 0);
+    } finally {
+      _inUpdate = false;
+    }
   }
 
   @override
@@ -189,7 +214,7 @@ class _SwipeDeckState extends State<SwipeDeck> with TickerProviderStateMixin {
         _size = box.biggest;
         final layers = <Widget>[];
         for (var layer = depth - 1; layer >= 0; layer--) {
-          final i = (widget.index + layer) % n;
+          final i = (widget.index + layer * _peekDir) % n;
           layers.add(
             _DeckLayer(
               key: ValueKey(widget.keyOf(i)),
