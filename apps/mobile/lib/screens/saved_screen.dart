@@ -172,7 +172,8 @@ class _SpotRow extends StatelessWidget {
                   tag: tag,
                   child: Cover(
                     gradientKey: spot.placeId,
-                    url: spot.coverImageUrl,
+                    url: spot.coverVariant(480) ?? spot.coverImageUrl,
+                    fallbackUrl: spot.coverImageUrl,
                     borderRadius: BorderRadius.circular(Radii.md),
                   ),
                 ),

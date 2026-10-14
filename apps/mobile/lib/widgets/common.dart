@@ -5,12 +5,14 @@ import '../theme/tokens.dart';
 
 /// Network image over a deterministic warm gradient: the gradient shows while
 /// the image loads, and stays if it never arrives (TikTok/Telegram CDNs are
-/// third parties we don't control).
+/// third parties we don't control). [fallbackUrl] is tried if [url] fails —
+/// a WebP variant that hasn't been generated yet falls back to the original.
 class Cover extends StatelessWidget {
-  const Cover({super.key, required this.gradientKey, this.url, this.child, this.borderRadius});
+  const Cover({super.key, required this.gradientKey, this.url, this.fallbackUrl, this.child, this.borderRadius});
 
   final String gradientKey;
   final String? url;
+  final String? fallbackUrl;
   final Widget? child;
   final BorderRadius? borderRadius;
 
@@ -20,28 +22,22 @@ class Cover extends StatelessWidget {
       decoration: BoxDecoration(gradient: coverGradient(gradientKey)),
       child: Stack(
         fit: StackFit.expand,
-        children: [
-          if (url == null) const _CoverPattern(),
-          if (url != null)
-            Image.network(
-              url!,
-              fit: BoxFit.cover,
-              frameBuilder: (context, child, frame, sync) => sync
-                  ? child
-                  : AnimatedOpacity(
-                      opacity: frame == null ? 0 : 1,
-                      duration: const Duration(milliseconds: 350),
-                      child: child,
-                    ),
-              errorBuilder: (context, error, stack) => const _CoverPattern(),
-            ),
-          ?child,
-        ],
+        children: [if (url == null) const _CoverPattern(), if (url != null) _image(url!, fallbackUrl), ?child],
       ),
     );
     if (borderRadius != null) content = ClipRRect(borderRadius: borderRadius!, child: content);
     return content;
   }
+
+  Widget _image(String src, String? fallback) => Image.network(
+    src,
+    fit: BoxFit.cover,
+    frameBuilder: (context, child, frame, sync) => sync
+        ? child
+        : AnimatedOpacity(opacity: frame == null ? 0 : 1, duration: const Duration(milliseconds: 350), child: child),
+    errorBuilder: (context, error, stack) =>
+        fallback != null && fallback != src ? _image(fallback, null) : const _CoverPattern(),
+  );
 }
 
 /// A faint topographic doodle so an imageless cover still feels designed

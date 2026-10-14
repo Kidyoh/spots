@@ -43,7 +43,11 @@ class SpotCard extends StatelessWidget {
               children: [
                 Hero(
                   tag: 'cover-${spot.placeId}',
-                  child: Cover(gradientKey: spot.placeId, url: spot.coverImageUrl),
+                  child: Cover(
+                    gradientKey: spot.placeId,
+                    url: spot.coverVariant(960) ?? spot.coverImageUrl,
+                    fallbackUrl: spot.coverImageUrl,
+                  ),
                 ),
                 // scrim: transparent up top, deep green where the text sits
                 DecoratedBox(
@@ -114,26 +118,36 @@ class SpotCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.play_circle_fill_rounded, size: 15, color: Palette.gold.withValues(alpha: 0.95)),
-                          const SizedBox(width: 5),
-                          Flexible(
-                            child: Text(
-                              '${spot.videoCount} TikTok ${spot.videoCount == 1 ? 'review' : 'reviews'}'
-                              '${distance != null ? '  ·  ~$distance' : ''}',
-                              style: TextStyle(
-                                color: Palette.bg.withValues(alpha: 0.85),
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                      // review count (hidden for hand-added spots with none) and distance
+                      if (spot.videoCount > 0 || distance != null) ...[
+                        Row(
+                          children: [
+                            Icon(
+                              spot.videoCount > 0 ? Icons.play_circle_fill_rounded : Icons.near_me_rounded,
+                              size: 15,
+                              color: Palette.gold.withValues(alpha: 0.95),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                [
+                                  if (spot.videoCount > 0)
+                                    '${spot.videoCount} TikTok ${spot.videoCount == 1 ? 'review' : 'reviews'}',
+                                  if (distance != null) '~$distance',
+                                ].join('  ·  '),
+                                style: TextStyle(
+                                  color: Palette.bg.withValues(alpha: 0.85),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Text(
                         spot.name,
                         maxLines: 2,

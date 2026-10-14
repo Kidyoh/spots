@@ -71,7 +71,11 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     final top = MediaQuery.paddingOf(context).top;
     final distance = state.coords != null && !state.farFromAddis ? formatRoadEstimate(state.roadKmTo(spot)) : null;
 
-    Widget cover = Cover(gradientKey: spot.placeId, url: spot.coverImageUrl);
+    Widget cover = Cover(
+      gradientKey: spot.placeId,
+      url: spot.coverVariant(960) ?? spot.coverImageUrl,
+      fallbackUrl: spot.coverImageUrl,
+    );
     if (widget.heroTag != null) cover = Hero(tag: widget.heroTag!, child: cover);
 
     return Scaffold(

@@ -59,6 +59,18 @@ class Spot {
 
   double get stars => qualityScore / 20;
   String get area => neighborhood ?? 'Addis Ababa';
+
+  /// A smaller WebP of a cover we re-host, by the ingestion naming rule
+  /// `<placeId>-<width>.webp` (widths 480 and 960, see the CLI's
+  /// lib/storage.ts). Null for external covers, which have no variants.
+  String? coverVariant(int width) {
+    const marker = '/storage/v1/object/public/spot-covers/';
+    final url = coverImageUrl;
+    final i = url?.indexOf(marker) ?? -1;
+    if (i < 0) return null;
+    return '${url!.substring(0, i + marker.length)}${Uri.encodeComponent(placeId)}-$width.webp';
+  }
+
   bool get hasPrice => priceLevel != null && priceMin != null;
 
   /// First seen within the last 7 days. `first_seen_at` is set once on insert,

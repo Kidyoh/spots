@@ -324,7 +324,8 @@ class _NearCard extends StatelessWidget {
                     tag: 'near-${spot.placeId}',
                     child: Cover(
                       gradientKey: spot.placeId,
-                      url: spot.coverImageUrl,
+                      url: spot.coverVariant(480) ?? spot.coverImageUrl,
+                      fallbackUrl: spot.coverImageUrl,
                       borderRadius: BorderRadius.circular(Radii.md),
                     ),
                   ),

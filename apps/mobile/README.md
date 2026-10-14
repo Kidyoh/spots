@@ -44,15 +44,29 @@ Without keys the app runs on the design mock (`design/data/spots-data.js`,
 exported to `assets/data/demo_spots.json`), generated sample events, and keeps
 the personal lists on the device.
 
-Against the real project, pass the same URL + publishable key the web uses
-(`VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` in the root `.env`):
+Against the real project, put the same URL + publishable key the web uses
+(`VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` in the root `.env`) in
+`apps/mobile/supabase.json` (git-ignored):
+
+```json
+{ "SUPABASE_URL": "https://<ref>.supabase.co", "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_…" }
+```
 
 ```bash
-flutter run \
-  --dart-define=SUPABASE_URL=https://<ref>.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=<publishable key> \
-  --dart-define=WEB_ORIGIN=https://<where the web app lives>   # optional: share links land on the web card
+flutter run --dart-define-from-file=supabase.json
+# optional: --dart-define=WEB_ORIGIN=https://<web app> so share links land on the web card
 ```
+
+### Release APK
+
+```bash
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols \
+  --dart-define-from-file=supabase.json
+# → build/app/outputs/flutter-apk/app-arm64-v8a-release.apk (~9 MB)
+```
+
+Native libraries are stored compressed (`useLegacyPackaging` in
+`android/app/build.gradle.kts`), which takes the arm64 APK from ~20 MB to ~9 MB.
 
 ### Google sign-in
 

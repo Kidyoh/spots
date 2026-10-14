@@ -279,7 +279,8 @@ class EventTile extends StatelessWidget {
                   url: h.imageUrl,
                   borderRadius: BorderRadius.circular(Radii.md),
                   child: Container(
-                    color: Palette.greenDeep.withValues(alpha: h.imageUrl == null ? 0 : 0.35),
+                    // darken a flyer enough that the date stays readable over its own text
+                    color: Palette.greenDeep.withValues(alpha: h.imageUrl == null ? 0 : 0.62),
                     alignment: Alignment.center,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

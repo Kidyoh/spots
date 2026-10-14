@@ -29,6 +29,15 @@ android {
         versionName = flutter.versionName
     }
 
+    // Compress the native libraries (the Flutter engine is most of the APK)
+    // instead of storing them uncompressed for direct mapping: roughly halves
+    // the download, at the cost of unpacking them once on install.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
