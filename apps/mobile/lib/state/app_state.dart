@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/analytics.dart';
 import '../data/backend.dart';
 import '../logic/categories.dart';
 import '../logic/geo.dart';
@@ -18,7 +19,7 @@ enum LocStatus { idle, locating, granted, denied, unavailable }
 /// The whole app's state in one notifier: the catalog, filters, the personal
 /// lists, and the phone's location. Screens read it through [AppScope].
 class AppState extends ChangeNotifier {
-  AppState(this.backend) {
+  AppState(this.backend, {Analytics? analytics}) : analytics = analytics ?? Analytics.disabled() {
     user = backend.currentUser;
     _authSub = backend.userChanges.listen((u) {
       final changed = u?.id != user?.id;
@@ -29,6 +30,9 @@ class AppState extends ChangeNotifier {
   }
 
   final Backend backend;
+
+  /// Product events into the shared `events` table, tagged as the app.
+  final Analytics analytics;
   late final StreamSubscription<AppUser?> _authSub;
   final _toasts = StreamController<String>.broadcast();
   final _rng = math.Random();
@@ -43,7 +47,20 @@ class AppState extends ChangeNotifier {
   List<Happening>? happenings;
   Object? eventsError;
 
+  static const _screens = ['discover', 'events', 'near', 'saved'];
+
+  /// The screen the user is on, for an event's path (`/app/<screen>`).
+  String get screen => _screens[tab];
+
+  void track(String name, [Map<String, Object?>? props]) => analytics.track(name, screen: screen, props: props);
+
+  bool _opened = false;
+
   Future<void> load() async {
+    if (!_opened) {
+      _opened = true;
+      track('page_view'); // the web's name for "opened the app"
+    }
     await Future.wait([_loadSpots(), _loadEvents(), _loadPersonal(), _loadHint()]);
   }
 
@@ -86,6 +103,15 @@ class AppState extends ChangeNotifier {
   void setTab(int i) {
     if (i == tab) return;
     tab = i;
+    // same names as the web where the feature is the same
+    switch (i) {
+      case 1:
+        track('events_tab');
+      case 2:
+        track('near_open');
+      case 3:
+        track('saved_open');
+    }
     notifyListeners();
   }
 
@@ -199,6 +225,7 @@ class AppState extends ChangeNotifier {
       next = _rng.nextInt(n);
     }
     deckIndex = next;
+    track('surprise');
     notifyListeners();
   }
 
@@ -311,6 +338,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> signIn() async {
+    track('sign_in_click');
     try {
       await backend.signIn();
     } catch (e) {
@@ -346,6 +374,7 @@ class AppState extends ChangeNotifier {
     try {
       was ? await backend.removeSaved(spot.placeId) : await backend.addSaved(spot.placeId);
       _toasts.add(was ? 'Removed from Want to go' : 'Saved to Want to go');
+      if (!was) track('spot_save', {'placeId': spot.placeId});
     } catch (_) {
       savedIds = was ? [spot.placeId, ...savedIds] : savedIds.where((id) => id != spot.placeId).toList();
       notifyListeners();
@@ -372,6 +401,7 @@ class AppState extends ChangeNotifier {
         final v = await backend.createVisit(spot);
         visits = [v, ...visits];
         notifyListeners();
+        track('spot_been', {'placeId': spot.placeId});
         _toasts.add('Added to Places we\'ve been');
       } catch (_) {
         _toasts.add("Couldn't update your log");
@@ -401,6 +431,7 @@ class AppState extends ChangeNotifier {
   bool get farFromAddis => coords != null && !isNearAddis(coords!);
 
   Future<void> requestLocation() async {
+    track('near_locate');
     locStatus = LocStatus.locating;
     notifyListeners();
     try {

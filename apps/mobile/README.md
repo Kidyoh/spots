@@ -88,6 +88,22 @@ browser tab, which returns via `spots://login-callback` — add that under
 **Supabase → Authentication → URL Configuration → Redirect URLs**, or Supabase
 sends people to the website instead of back to the app.
 
+### Analytics
+
+With live keys the app writes the same `events` rows as the web (same names
+where the feature is the same: `page_view`, `surprise`, `spot_save`,
+`spot_share`, `events_tab`, `near_open`, `happening_*`, `sign_in_click`, plus
+app-only `spot_open`, `spot_been`, `saved_open`, `near_locate`). Rows are
+tagged `user_agent = 'spots-app/<version> (android)'` and `path = '/app/<screen>'`,
+so no schema change is needed to tell them apart:
+
+```bash
+bun run spots analytics                  # adds a web vs app breakdown
+bun run spots analytics --platform app   # every number for the app only
+```
+
+Demo builds (no keys) send nothing.
+
 ### Map tiles
 
 Defaults to the standard OpenStreetMap tiles. CARTO's Voyager basemap (the

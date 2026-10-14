@@ -126,3 +126,28 @@ with linked as (
 select (select count(distinct coalesce(user_id, anon_id)) from events
           where created_at > now() - interval '30 days') as naive_mau,
        (select count(distinct actor) from ev)            as stitched_mau;
+
+-- ── Web site vs the app, last 30 days ───────────────────────────────
+-- The Flutter app (apps/mobile) writes user_agent 'spots-app/<version> (…)'
+-- and path '/app/<screen>', so platform is read off that prefix. Someone who
+-- uses both counts once on each row, so the rows can sum to more than MAU.
+with linked as (
+  select anon_id, min(user_id) as user_id from events
+  where anon_id is not null and user_id is not null group by 1
+), ev as (
+  select coalesce(e.user_id, l.user_id, e.anon_id) as actor, e.created_at,
+         case when e.user_agent like 'spots-app/%' then 'app' else 'web' end as platform
+  from events e left join linked l on l.anon_id = e.anon_id
+  where e.created_at > now() - interval '30 days'
+    and (e.user_agent is null or e.user_agent !~* 'bot|crawl|spider|slurp|headless|facebookexternalhit|whatsapp|telegram|preview|python-requests|curl/')
+), per_day as (
+  select platform, date_trunc('day', created_at) as day, count(distinct actor) as dau
+  from ev group by 1, 2
+)
+select p.platform,
+       count(distinct p.actor) as actors,
+       count(*)                as events,
+       (select round(avg(dau)) from per_day d where d.platform = p.platform) as avg_dau
+from (select platform, actor from ev) p
+group by p.platform
+order by actors desc;

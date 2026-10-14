@@ -1,7 +1,7 @@
 name: spots
 description: "spots — date spots around Addis."
 publish_to: "none"
-version: 0.1.1+2
+version: 0.1.2+3
 
 environment:
   sdk: ^3.8.0
@@ -15,6 +15,7 @@ dependencies:
   geolocator: ^14.1.1
   google_sign_in: ^7.2.0
   latlong2: ^0.10.1
+  package_info_plus: ^10.2.2
   share_plus: ^13.3.1
   shared_preferences: ^2.5.6
   supabase_flutter: ^2.18.3

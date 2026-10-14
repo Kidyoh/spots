@@ -394,6 +394,7 @@ class _Pill extends StatelessWidget {
 }
 
 Future<void> showEventSheet(BuildContext context, Happening h) {
+  AppScope.read(context).track('happening_open', {'id': h.id});
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -542,7 +543,10 @@ class _EventSheet extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   child: FilledButton.icon(
-                    onPressed: () => openUrl(calendarUri(h)),
+                    onPressed: () {
+                      AppScope.read(context).track('happening_calendar', {'id': h.id});
+                      openUrl(calendarUri(h));
+                    },
                     icon: const Icon(Icons.event_available_rounded),
                     label: const Text('Add to calendar', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
@@ -559,7 +563,10 @@ class _EventSheet extends StatelessWidget {
                               backgroundColor: Palette.accentWash,
                               foregroundColor: Palette.accentText,
                             ),
-                            onPressed: () => openUrl(Uri.parse(h.ticketUrl!)),
+                            onPressed: () {
+                              AppScope.read(context).track('happening_tickets', {'id': h.id});
+                              openUrl(Uri.parse(h.ticketUrl!));
+                            },
                             icon: const Icon(Icons.local_activity_outlined),
                             label: const Text('Tickets'),
                           ),

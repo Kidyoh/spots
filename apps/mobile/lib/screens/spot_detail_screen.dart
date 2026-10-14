@@ -17,6 +17,7 @@ import '../widgets/common.dart';
 import '../widgets/spot_map.dart';
 
 Future<void> openSpot(BuildContext context, Spot spot, {String? heroTag}) {
+  AppScope.read(context).track('spot_open', {'placeId': spot.placeId});
   return Navigator.of(context).push(
     PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 480),
@@ -33,8 +34,18 @@ Future<void> openSpot(BuildContext context, Spot spot, {String? heroTag}) {
   );
 }
 
-Future<void> shareSpot(Spot spot) =>
-    SharePlus.instance.share(ShareParams(text: '${spotShareText(spot)}\n${spotShareUrl(spot)}', subject: spot.name));
+Future<void> shareSpot(BuildContext context, Spot spot) async {
+  final state = AppScope.read(context);
+  final result = await SharePlus.instance.share(
+    ShareParams(text: '${spotShareText(spot)}\n${spotShareUrl(spot)}', subject: spot.name),
+  );
+  // like the web: backing out of the share sheet isn't an event
+  if (result.status == ShareResultStatus.dismissed) return;
+  state.track('spot_share', {
+    'id': spot.placeId,
+    'outcome': result.status == ShareResultStatus.success ? 'shared' : 'failed',
+  });
+}
 
 Future<void> openUrl(Uri uri) => launchUrl(uri, mode: LaunchMode.externalApplication);
 
@@ -215,7 +226,7 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                 RoundIconButton(
                   icon: Icons.ios_share_rounded,
                   tooltip: 'Share this spot',
-                  onPressed: () => shareSpot(spot),
+                  onPressed: () => shareSpot(context, spot),
                 ),
                 const SizedBox(width: 10),
                 RoundIconButton(
@@ -317,7 +328,7 @@ class _Actions extends StatelessWidget {
         (Icons.play_arrow_rounded, 'Watch', () => openUrl(Uri.parse(spot.sourceVideoUrl!))),
       if (!spot.hideMap) (Icons.map_outlined, 'Map', () => openUrl(mapsUri(spot))),
       (Icons.directions_rounded, 'Directions', () => openUrl(directionsUri(spot))),
-      (Icons.ios_share_rounded, 'Share', () => shareSpot(spot)),
+      (Icons.ios_share_rounded, 'Share', () => shareSpot(context, spot)),
     ];
     return Row(
       children: [

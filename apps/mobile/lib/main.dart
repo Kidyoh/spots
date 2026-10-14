@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'data/analytics.dart';
 import 'data/backend.dart';
 import 'data/demo_backend.dart';
 import 'data/supabase_backend.dart';
@@ -29,14 +30,16 @@ Future<void> main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   final Backend backend;
+  var analytics = Analytics.disabled(); // demo data: nothing worth counting
   if (_supabaseUrl.isNotEmpty && _supabaseKey.isNotEmpty) {
     await Supabase.initialize(url: _supabaseUrl, publishableKey: _supabaseKey);
     backend = SupabaseBackend();
+    analytics = Analytics.supabase();
   } else {
     backend = DemoBackend();
   }
 
-  final state = AppState(backend)..load();
+  final state = AppState(backend, analytics: analytics)..load();
   runApp(SpotsApp(state: state));
 }
 
