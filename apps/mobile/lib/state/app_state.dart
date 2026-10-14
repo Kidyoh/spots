@@ -7,9 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/analytics.dart';
 import '../data/backend.dart';
+import '../logic/areas.dart';
 import '../logic/categories.dart';
 import '../logic/geo.dart';
 import '../logic/happenings.dart';
+import '../logic/search.dart';
 import '../models/happening.dart';
 import '../models/spot.dart';
 import '../models/visit.dart';
@@ -68,7 +70,9 @@ class AppState extends ChangeNotifier {
     spotsError = null;
     notifyListeners();
     try {
-      spots = await backend.fetchSpots();
+      final loaded = await backend.fetchSpots();
+      assignSefers(loaded);
+      spots = loaded;
       _invalidate();
     } catch (e) {
       spotsError = e;
@@ -173,10 +177,12 @@ class AppState extends ChangeNotifier {
   }
 
   /// Neighbourhoods with spots, most-populated first.
+  /// Canonical areas (sefers) with spots, most-populated first — the same
+  /// ~60 the web's filter offers, not every spelling in the data.
   List<String> get areas {
     final counts = <String, int>{};
     for (final s in spots ?? const <Spot>[]) {
-      if (s.neighborhood != null) counts.update(s.neighborhood!, (c) => c + 1, ifAbsent: () => 1);
+      if (s.sefer != null) counts.update(s.sefer!, (c) => c + 1, ifAbsent: () => 1);
     }
     return counts.keys.toList()
       ..sort((a, b) => counts[b]!.compareTo(counts[a]!) != 0 ? counts[b]!.compareTo(counts[a]!) : a.compareTo(b));
@@ -188,17 +194,38 @@ class AppState extends ChangeNotifier {
     final all = spots;
     if (all == null) return const [];
     return _filtered ??= () {
-      final q = query.trim().toLowerCase();
-      final terms = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
-      return all.where((s) {
-        if (area != null && s.neighborhood != area) return false;
-        if (price != null && s.priceLevel != price) return false;
-        if (!matchesCategories(s, selectedCategories)) return false;
-        if (terms.isEmpty) return true;
-        final hay = [s.name, s.neighborhood ?? '', s.address ?? '', s.summary ?? '', ...s.tags].join(' ').toLowerCase();
-        return terms.every(hay.contains);
-      }).toList()..sort(sort.compare);
+      final ranks = searchSpots(
+        all.where(
+          (s) =>
+              (area == null || s.sefer == area) &&
+              (price == null || s.priceLevel == price) &&
+              matchesCategories(s, selectedCategories),
+        ),
+        query,
+      );
+      final list = ranks.keys.toList();
+      // while searching, relevance leads and the chosen sort breaks ties
+      return list..sort((a, b) {
+        final byRank = ranks[a]!.compareTo(ranks[b]!);
+        return byRank != 0 ? byRank : sort.compare(a, b);
+      });
     }();
+  }
+
+  /// How many spots the search alone would find, ignoring area, price and
+  /// category chips — so an empty result can say the chips are hiding them.
+  int get searchOnlyMatches {
+    if (query.trim().isEmpty) return 0;
+    return searchSpots(spots ?? const <Spot>[], query).length;
+  }
+
+  /// Drop the chips, area and price but keep the search.
+  void searchEverywhere() {
+    area = null;
+    price = null;
+    selectedCategories.clear();
+    _invalidate();
+    notifyListeners();
   }
 
   Spot? get currentSpot {

@@ -2,7 +2,7 @@
 /// Mirrors `apps/web/src/lib/types.ts` (`Spot`). PostgREST may serialize
 /// `numeric` as strings, so every number is coerced on the way in.
 class Spot {
-  const Spot({
+  Spot({
     required this.id,
     required this.placeId,
     required this.name,
@@ -58,7 +58,16 @@ class Spot {
   final String? mapUrl;
 
   double get stars => qualityScore / 20;
-  String get area => neighborhood ?? 'Addis Ababa';
+
+  /// The canonical area (sefer) this spot files under, set once the catalog
+  /// loads (see logic/areas.dart: own neighbourhood → address → nearby
+  /// spots). Null when nothing places it.
+  String? sefer;
+
+  /// True when [sefer] was worked out from nearby spots rather than stated.
+  bool seferInferred = false;
+
+  String get area => sefer ?? neighborhood ?? 'Addis Ababa';
 
   /// [area] without a trailing note in brackets, for tags and one-line
   /// labels: "22 (from Adey Ababa stadium to Addis Hiwot hospital)" → "22".

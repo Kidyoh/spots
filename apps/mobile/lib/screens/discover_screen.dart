@@ -41,13 +41,40 @@ class DiscoverScreen extends StatelessWidget {
         onAction: state.retry,
       );
     } else if (spots.isEmpty) {
-      body = EmptyState(
-        icon: Icons.explore_off_rounded,
-        title: 'Nothing matches',
-        body: 'No spots match these filters — try widening the area or price.',
-        action: 'Clear filters',
-        onAction: state.clearFilters,
-      );
+      final q = state.query.trim();
+      final hidden = state.searchOnlyMatches;
+      if (q.isNotEmpty && hidden > 0) {
+        // the search found spots, but a chip/area/price filter is hiding them
+        final narrowing = [
+          for (final c in categories)
+            if (state.selectedCategories.contains(c.key)) c.label,
+          ?state.area,
+          if (state.price != null) priceLabels[state.price]!,
+        ].join(', ');
+        body = EmptyState(
+          icon: Icons.filter_alt_off_rounded,
+          title: 'No “$q” in $narrowing',
+          body: '$hidden ${hidden == 1 ? 'spot matches' : 'spots match'} “$q” outside these filters.',
+          action: 'Show ${hidden == 1 ? 'it' : 'all $hidden'}',
+          onAction: state.searchEverywhere,
+        );
+      } else if (q.isNotEmpty) {
+        body = EmptyState(
+          icon: Icons.search_off_rounded,
+          title: 'Nothing found for “$q”',
+          body: 'Try a shorter word, a dish, or an area like Bole or Piassa.',
+          action: 'Clear search',
+          onAction: () => state.setQuery(''),
+        );
+      } else {
+        body = EmptyState(
+          icon: Icons.explore_off_rounded,
+          title: 'Nothing matches',
+          body: 'No spots match these filters — try widening the area or price.',
+          action: 'Clear filters',
+          onAction: state.clearFilters,
+        );
+      }
     } else {
       final i = state.deckIndex % spots.length;
       body = Padding(

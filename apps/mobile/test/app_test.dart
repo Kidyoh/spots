@@ -68,4 +68,26 @@ void main() {
     expect(find.text("What's on"), findsOneWidget);
     expect(find.text('Today'), findsWidgets);
   });
+
+  testWidgets('a search hidden by a chip says so and can show all', (tester) async {
+    tester.view.physicalSize = const Size(400 * 3, 860 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final state = AppState(DemoBackend());
+    await tester.runAsync(state.load);
+    await tester.pumpWidget(SpotsApp(state: state));
+    await tester.pumpAndSettle();
+
+    state.toggleCategory('burgers'); // like having Habesha on and searching a cafe
+    state.setQuery('tomoca');
+    await tester.pumpAndSettle();
+    expect(state.filteredSpots, isEmpty);
+    expect(find.textContaining('outside these filters'), findsOneWidget);
+
+    await tester.tap(find.text('Show it'));
+    await tester.pumpAndSettle();
+    expect(state.selectedCategories, isEmpty);
+    expect(state.query, 'tomoca');
+    expect(state.currentSpot!.name, contains('Tomoca'));
+  });
 }
