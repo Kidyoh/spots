@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb show User;
+import 'package:url_launcher/url_launcher.dart' as launcher;
 
 import '../models/happening.dart';
 import '../models/spot.dart';
@@ -70,9 +71,26 @@ class SupabaseBackend extends Backend {
   @override
   Stream<AppUser?> get userChanges => _db.auth.onAuthStateChange.map((e) => _map(e.session?.user));
 
+  /// Google sign-in in an in-app browser tab (a Chrome Custom Tab on
+  /// Android, SFSafariViewController on iOS) that slides up over the app,
+  /// rather than switching to the Chrome app. supabase_flutter's
+  /// signInWithOAuth forces the external browser for Google on Android, so we
+  /// build the URL (which also stores the PKCE verifier) and open it here.
+  /// Google refuses plain WebViews, which is why this isn't one. When Google
+  /// redirects to [authRedirect], supabase_flutter's deep-link listener
+  /// finishes the sign-in, and launchMode="singleTask" closes the tab.
   @override
   Future<void> signIn() async {
-    await _db.auth.signInWithOAuth(OAuthProvider.google, redirectTo: kIsWeb ? null : authRedirect);
+    if (kIsWeb) {
+      await _db.auth.signInWithOAuth(OAuthProvider.google);
+      return;
+    }
+    final res = await _db.auth.getOAuthSignInUrl(provider: OAuthProvider.google, redirectTo: authRedirect);
+    final opened = await launcher.launchUrl(Uri.parse(res.url), mode: launcher.LaunchMode.inAppBrowserView);
+    if (!opened) {
+      // no Custom Tabs provider on the phone: fall back to the browser
+      await launcher.launchUrl(Uri.parse(res.url), mode: launcher.LaunchMode.externalApplication);
+    }
   }
 
   @override
