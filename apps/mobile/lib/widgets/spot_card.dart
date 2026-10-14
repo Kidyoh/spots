@@ -71,10 +71,17 @@ class SpotCard extends StatelessWidget {
                   right: 16,
                   child: Row(
                     children: [
-                      GlassTag(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [const Icon(Icons.place_rounded), const SizedBox(width: 4), Text(spot.area)],
+                      // shrinks and ends in "…" rather than running off the card
+                      Flexible(
+                        child: GlassTag(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.place_rounded),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text(spot.areaShort, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                            ],
+                          ),
                         ),
                       ),
                       if (spot.isNew) ...[
@@ -96,17 +103,10 @@ class SpotCard extends StatelessWidget {
                           ),
                         ),
                       ],
+                      const SizedBox(width: 8),
                       const Spacer(),
-                      if (visited)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 6),
-                          child: GlassTag(dark: true, child: Icon(Icons.check_rounded)),
-                        ),
-                      if (saved)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 6),
-                          child: GlassTag(dark: true, child: Icon(Icons.bookmark_rounded)),
-                        ),
+                      if (visited) const _StatusBadge(icon: Icons.check_rounded, label: 'Been here'),
+                      if (saved) const _StatusBadge(icon: Icons.bookmark_rounded, label: 'Saved'),
                     ],
                   ),
                 ),
@@ -200,6 +200,34 @@ class SpotCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Been here / Saved marker on the cover: a white disc with an orange icon.
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: label,
+      child: Container(
+        margin: const EdgeInsets.only(left: 6),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: Palette.card,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Palette.shadow.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Icon(icon, size: 18, color: Palette.terracotta),
       ),
     );
   }

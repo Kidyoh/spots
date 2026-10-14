@@ -260,7 +260,7 @@ class _Header extends StatelessWidget {
         Row(
           children: [
             Text(
-              spot.area.toUpperCase(),
+              spot.areaShort.toUpperCase(),
               style: const TextStyle(
                 fontSize: 12,
                 letterSpacing: 1.4,

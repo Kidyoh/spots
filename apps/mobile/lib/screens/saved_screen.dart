@@ -201,7 +201,7 @@ class _SpotRow extends StatelessWidget {
                         const SizedBox(width: 3),
                         Flexible(
                           child: Text(
-                            '${spot.stars.toStringAsFixed(1)} · ${spot.area}${price != null ? ' · $price' : ''}',
+                            '${spot.stars.toStringAsFixed(1)} · ${spot.areaShort}${price != null ? ' · $price' : ''}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 12.5, color: Palette.muted),

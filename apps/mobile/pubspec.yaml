@@ -1,12 +1,13 @@
 name: spots
 description: "spots — date spots around Addis."
 publish_to: "none"
-version: 0.1.0+1
+version: 0.1.1+2
 
 environment:
   sdk: ^3.8.0
 
 dependencies:
+  audioplayers: ^6.8.1
   confetti: ^0.8.0
   flutter:
     sdk: flutter
@@ -24,6 +25,7 @@ flutter:
 
   assets:
     - assets/data/
+    - assets/sounds/
 
   # Quicksand, the same face as the web app. Static instances cut from the
   # variable font (weights 400–700) so FontWeight maps to a real cut.

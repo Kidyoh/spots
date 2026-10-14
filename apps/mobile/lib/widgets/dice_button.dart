@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/tokens.dart';
 
-/// "Surprise me": the die tumbles to a new face (with a haptic rattle) and
-/// the deck jumps to a random spot. Ported from `DiceButton.tsx`, but as a
+/// "Surprise me": the die tumbles to a new face (with the web's roll sound
+/// and a haptic rattle) and the deck jumps to a random spot. Ported from `DiceButton.tsx`, but as a
 /// floating capsule that sits above the tab bar.
 class DiceButton extends StatefulWidget {
   const DiceButton({super.key, required this.onRoll, this.label = 'Surprise me', this.compact = false});
@@ -23,17 +24,39 @@ class _DiceButtonState extends State<DiceButton> with SingleTickerProviderStateM
   final _rng = math.Random();
   int _face = 5;
   late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 650));
+  AudioPlayer? _audio;
 
   @override
   void dispose() {
     _c.dispose();
+    _audio?.dispose();
     super.dispose();
+  }
+
+  /// The same dice-roll.mp3 as the web, at the web's volume. Mixes with
+  /// whatever else is playing instead of pausing someone's music, and stays
+  /// quiet when the phone is on silent. A flourish only: any failure is
+  /// swallowed so the roll itself never waits on it.
+  Future<void> _playSound() async {
+    try {
+      var audio = _audio;
+      if (audio == null) {
+        audio = _audio = AudioPlayer();
+        await audio.setPlayerMode(PlayerMode.lowLatency);
+        await audio.setAudioContext(
+          AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers, respectSilence: true).build(),
+        );
+      }
+      await audio.stop();
+      await audio.play(AssetSource('sounds/dice-roll.mp3'), volume: 0.4);
+    } catch (_) {}
   }
 
   Future<void> _roll() async {
     HapticFeedback.mediumImpact();
     setState(() => _face = 1 + _rng.nextInt(6));
     _c.forward(from: 0);
+    _playSound();
     widget.onRoll();
     await Future<void>.delayed(const Duration(milliseconds: 120));
     HapticFeedback.lightImpact();

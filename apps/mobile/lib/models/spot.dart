@@ -60,6 +60,13 @@ class Spot {
   double get stars => qualityScore / 20;
   String get area => neighborhood ?? 'Addis Ababa';
 
+  /// [area] without a trailing note in brackets, for tags and one-line
+  /// labels: "22 (from Adey Ababa stadium to Addis Hiwot hospital)" → "22".
+  String get areaShort {
+    final short = area.replaceFirst(RegExp(r'\s*\(.*\)\s*$'), '').trim();
+    return short.isEmpty ? area : short;
+  }
+
   /// A smaller WebP of a cover we re-host, by the ingestion naming rule
   /// `<placeId>-<width>.webp` (widths 480 and 960, see the CLI's
   /// lib/storage.ts). Null for external covers, which have no variants.

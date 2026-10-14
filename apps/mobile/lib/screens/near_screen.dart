@@ -378,7 +378,7 @@ class _NearCard extends StatelessWidget {
                           ),
                           Expanded(
                             child: Text(
-                              '  ·  ${spot.area}${price != null ? '  ·  $price' : ''}',
+                              '  ·  ${spot.areaShort}${price != null ? '  ·  $price' : ''}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 12.5, color: Palette.muted),
