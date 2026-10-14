@@ -71,40 +71,47 @@ class SpotCard extends StatelessWidget {
                   right: 16,
                   child: Row(
                     children: [
-                      // shrinks and ends in "…" rather than running off the card
-                      Flexible(
-                        child: GlassTag(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.place_rounded),
-                              const SizedBox(width: 4),
-                              Flexible(child: Text(spot.areaShort, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      // Area (+ NEW) take the free space on the left — shrinking with
+                      // "…" when long — so the Been here / Saved badges always sit in
+                      // the top-right corner.
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: GlassTag(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.place_rounded),
+                                    const SizedBox(width: 4),
+                                    Flexible(child: Text(spot.areaShort, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            if (spot.isNew) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Palette.terracotta,
+                                  borderRadius: BorderRadius.circular(Radii.pill),
+                                ),
+                                child: const Text(
+                                  'NEW',
+                                  style: TextStyle(
+                                    color: Palette.card,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
                             ],
-                          ),
+                          ],
                         ),
                       ),
-                      if (spot.isNew) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Palette.terracotta,
-                            borderRadius: BorderRadius.circular(Radii.pill),
-                          ),
-                          child: const Text(
-                            'NEW',
-                            style: TextStyle(
-                              color: Palette.card,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ),
-                      ],
                       const SizedBox(width: 8),
-                      const Spacer(),
                       if (visited) const _StatusBadge(icon: Icons.check_rounded, label: 'Been here'),
                       if (saved) const _StatusBadge(icon: Icons.bookmark_rounded, label: 'Saved'),
                     ],

@@ -249,7 +249,7 @@ class _DeckControls extends StatelessWidget {
         builder: (context, box) => Row(
           children: [
             RoundIconButton(icon: Icons.undo_rounded, tooltip: 'Previous', size: 48, onPressed: () => state.step(-1)),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             // takes all the free space in the row and, on a very narrow phone,
             // shrinks the text rather than cutting off the total
             Expanded(
@@ -300,10 +300,10 @@ class _DeckControls extends StatelessWidget {
                 }
               },
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             // narrow phones keep the die and drop the label, so the counter
             // always has room for its total
-            DiceButton(onRoll: state.surprise, compact: box.maxWidth < 365),
+            DiceButton(onRoll: state.surprise, compact: box.maxWidth < 320),
           ],
         ),
       ),

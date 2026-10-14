@@ -33,23 +33,34 @@ class _DiceButtonState extends State<DiceButton> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  /// The same dice-roll.mp3 as the web, at the web's volume. Mixes with
-  /// whatever else is playing instead of pausing someone's music, and stays
-  /// quiet when the phone is on silent. A flourish only: any failure is
-  /// swallowed so the roll itself never waits on it.
+  /// The same dice-roll.mp3 as the web. Like the web, it plays at media
+  /// volume even when the ringer is on silent/vibrate (respecting silence is
+  /// why the first build made no sound), and it mixes with whatever else is
+  /// playing instead of pausing someone's music. The clip loads as the finger
+  /// touches down (the roll fires on release), so the first roll isn't lost
+  /// to loading. A flourish only: any
+  /// failure is swallowed so the roll itself never waits on it.
+  Future<AudioPlayer>? _ready;
+
+  Future<AudioPlayer> _prepare() async {
+    final audio = _audio = AudioPlayer();
+    await audio.setAudioContext(
+      AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers, respectSilence: false).build(),
+    );
+    await audio.setReleaseMode(ReleaseMode.stop); // keep the clip loaded between rolls
+    await audio.setVolume(0.7);
+    await audio.setSource(AssetSource('sounds/dice-roll.mp3'));
+    return audio;
+  }
+
   Future<void> _playSound() async {
     try {
-      var audio = _audio;
-      if (audio == null) {
-        audio = _audio = AudioPlayer();
-        await audio.setPlayerMode(PlayerMode.lowLatency);
-        await audio.setAudioContext(
-          AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers, respectSilence: true).build(),
-        );
-      }
-      await audio.stop();
-      await audio.play(AssetSource('sounds/dice-roll.mp3'), volume: 0.4);
-    } catch (_) {}
+      final audio = await (_ready ??= _prepare());
+      await audio.seek(Duration.zero);
+      await audio.resume();
+    } catch (_) {
+      _ready = null; // try loading again next roll
+    }
   }
 
   Future<void> _roll() async {
@@ -87,10 +98,11 @@ class _DiceButtonState extends State<DiceButton> with SingleTickerProviderStateM
         borderRadius: BorderRadius.circular(Radii.pill),
         child: InkWell(
           borderRadius: BorderRadius.circular(Radii.pill),
+          onTapDown: (_) => _ready ??= _prepare()..ignore(),
           onTap: _roll,
           child: Container(
             height: 52,
-            padding: EdgeInsets.symmetric(horizontal: widget.compact ? 15 : 20),
+            padding: EdgeInsets.symmetric(horizontal: widget.compact ? 15 : 17),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Radii.pill),
               boxShadow: [
@@ -106,7 +118,7 @@ class _DiceButtonState extends State<DiceButton> with SingleTickerProviderStateM
               children: [
                 die,
                 if (!widget.compact) ...[
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Text(
                     widget.label,
                     style: const TextStyle(color: Palette.card, fontWeight: FontWeight.w700, fontSize: 15),

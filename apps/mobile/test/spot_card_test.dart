@@ -43,5 +43,27 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     expect(find.byIcon(Icons.bookmark_rounded), findsOneWidget);
+    // the badges hug the card's top-right corner, not the middle
+    final cardRight = tester.getTopRight(find.byType(SpotCard)).dx;
+    expect(cardRight - tester.getTopRight(find.byIcon(Icons.bookmark_rounded)).dx, lessThan(40));
+  });
+
+  testWidgets('with a short area the badges still sit in the top-right corner', (tester) async {
+    tester.view.physicalSize = const Size(400 * 3, 640 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SpotCard(
+            spot: spot(neighborhood: 'Bole'),
+            onOpen: () {},
+            visited: true,
+          ),
+        ),
+      ),
+    );
+    final cardRight = tester.getTopRight(find.byType(SpotCard)).dx;
+    expect(cardRight - tester.getTopRight(find.byIcon(Icons.check_rounded)).dx, lessThan(40));
   });
 }
