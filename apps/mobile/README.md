@@ -70,10 +70,23 @@ Native libraries are stored compressed (`useLegacyPackaging` in
 
 ### Google sign-in
 
-The app signs in through Supabase OAuth and comes back on the deep link
-`spots://login-callback` (already wired in
-`AndroidManifest.xml` and `Info.plist`). Add that URL under
-**Supabase → Authentication → URL Configuration → Redirect URLs**.
+On Android the app uses the phone's own Google account picker (no browser):
+the picker returns an ID token that Supabase accepts directly. It needs:
+
+1. `GOOGLE_WEB_CLIENT_ID` in `supabase.json` — the OAuth **web** client ID
+   from Supabase → Authentication → Providers → Google.
+2. An **Android** OAuth client in the same Google Cloud project
+   (APIs & Services → Credentials → Create credentials → OAuth client ID →
+   Android) with package name `io.spots` and the SHA-1 of the release key.
+3. The release key itself: `android/key.properties` plus the `.jks` it names
+   (both git-ignored). Builds signed with any other key get a different SHA-1
+   and the picker refuses them. Without the file, release builds fall back to
+   the debug key.
+
+If the picker can't be used it falls back to Google's page in an in-app
+browser tab, which returns via `spots://login-callback` — add that under
+**Supabase → Authentication → URL Configuration → Redirect URLs**, or Supabase
+sends people to the website instead of back to the app.
 
 ### Map tiles
 

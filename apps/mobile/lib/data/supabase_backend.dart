@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb show User;
 import 'package:url_launcher/url_launcher.dart' as launcher;
@@ -11,6 +12,13 @@ import 'backend.dart';
 /// Must also be listed under Supabase → Auth → URL Configuration → Redirect
 /// URLs, and matches the intent filter / URL scheme in the platform folders.
 const authRedirect = 'spots://login-callback';
+
+/// The OAuth *web* client configured on Supabase's Google provider. With it,
+/// Android shows its own account picker and hands us an ID token for that
+/// client, which Supabase accepts directly — no browser, no redirect. Needs
+/// an Android OAuth client (package io.spots + the signing key's SHA-1) in
+/// the same Google Cloud project; see README.
+const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
 /// The same queries `apps/web/src/lib/*.ts` makes, against the same RLS.
 class SupabaseBackend extends Backend {
@@ -71,30 +79,65 @@ class SupabaseBackend extends Backend {
   @override
   Stream<AppUser?> get userChanges => _db.auth.onAuthStateChange.map((e) => _map(e.session?.user));
 
-  /// Google sign-in in an in-app browser tab (a Chrome Custom Tab on
-  /// Android, SFSafariViewController on iOS) that slides up over the app,
-  /// rather than switching to the Chrome app. supabase_flutter's
-  /// signInWithOAuth forces the external browser for Google on Android, so we
-  /// build the URL (which also stores the PKCE verifier) and open it here.
-  /// Google refuses plain WebViews, which is why this isn't one. When Google
-  /// redirects to [authRedirect], supabase_flutter's deep-link listener
-  /// finishes the sign-in, and launchMode="singleTask" closes the tab.
+  bool _googleReady = false;
+
   @override
   Future<void> signIn() async {
     if (kIsWeb) {
       await _db.auth.signInWithOAuth(OAuthProvider.google);
       return;
     }
+    if (googleWebClientId.isNotEmpty && defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        await _signInNative();
+        return;
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) return; // they backed out
+        // anything else (usually the Android client isn't registered yet):
+        // fall through to the browser flow rather than leave them stuck
+        debugPrint('Native Google sign-in unavailable (${e.code}): ${e.description}');
+      }
+    }
+    await _signInInBrowserTab();
+  }
+
+  /// Android's own Google account sheet → ID token → Supabase session.
+  Future<void> _signInNative() async {
+    final google = GoogleSignIn.instance;
+    if (!_googleReady) {
+      await google.initialize(serverClientId: googleWebClientId);
+      _googleReady = true;
+    }
+    final account = await google.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null) {
+      throw const GoogleSignInException(code: GoogleSignInExceptionCode.unknownError, description: 'no ID token');
+    }
+    await _db.auth.signInWithIdToken(provider: OAuthProvider.google, idToken: idToken);
+  }
+
+  /// Fallback: Google's page in an in-app browser tab (Chrome Custom Tab /
+  /// SFSafariViewController) over the app. supabase_flutter's signInWithOAuth
+  /// forces the external browser for Google on Android, so we build the URL
+  /// (which also stores the PKCE verifier) and open it ourselves; Google
+  /// refuses plain WebViews. The redirect to [authRedirect] — which must be
+  /// on Supabase's Redirect URLs list, or Supabase sends people to the website
+  /// instead — is finished by supabase_flutter's deep-link listener, and
+  /// launchMode="singleTask" closes the tab.
+  Future<void> _signInInBrowserTab() async {
     final res = await _db.auth.getOAuthSignInUrl(provider: OAuthProvider.google, redirectTo: authRedirect);
     final opened = await launcher.launchUrl(Uri.parse(res.url), mode: launcher.LaunchMode.inAppBrowserView);
     if (!opened) {
-      // no Custom Tabs provider on the phone: fall back to the browser
       await launcher.launchUrl(Uri.parse(res.url), mode: launcher.LaunchMode.externalApplication);
     }
   }
 
   @override
-  Future<void> signOut() => _db.auth.signOut();
+  Future<void> signOut() async {
+    await _db.auth.signOut();
+    // so the picker asks again next time instead of reusing the account
+    if (_googleReady) await GoogleSignIn.instance.signOut();
+  }
 
   String get _uid => _db.auth.currentUser!.id;
 
