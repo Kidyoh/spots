@@ -26,6 +26,11 @@ class _NearScreenState extends State<NearScreen> with TickerProviderStateMixin {
   final _map = MapController();
   final _pages = PageController(viewportFraction: 0.86);
   int _selected = 0;
+
+  /// The card the rail is sliding to after a pin tap. While set, the pages
+  /// it passes on the way are ignored — otherwise each one would re-select
+  /// its spot and the map would fly back and forth.
+  int? _railTarget;
   double _radius = 10;
   AnimationController? _moveAnim;
 
@@ -64,8 +69,19 @@ class _NearScreenState extends State<NearScreen> with TickerProviderStateMixin {
     final s = list[i].$1;
     _flyTo(LatLng(s.lat, s.lng), 14.5);
     if (fromMap && _pages.hasClients) {
-      _pages.animateToPage(i, duration: const Duration(milliseconds: 420), curve: Curves.easeOutCubic);
+      _railTarget = i;
+      // far away: jump next to it first, so the slide is one short step
+      final current = _pages.page?.round() ?? i;
+      if ((current - i).abs() > 2) _pages.jumpToPage(i + (current < i ? -1 : 1));
+      _pages
+          .animateToPage(i, duration: const Duration(milliseconds: 380), curve: Curves.easeOutCubic)
+          .whenComplete(() => _railTarget = null);
     }
+  }
+
+  void _onPageChanged(int i, List<(Spot, double)> list) {
+    if (_railTarget != null) return; // passing through on the way to a tapped pin
+    _select(i, list);
   }
 
   @override
@@ -174,7 +190,7 @@ class _NearScreenState extends State<NearScreen> with TickerProviderStateMixin {
               : PageView.builder(
                   controller: _pages,
                   itemCount: list.length,
-                  onPageChanged: (i) => _select(i, list),
+                  onPageChanged: (i) => _onPageChanged(i, list),
                   itemBuilder: (context, i) {
                     final (s, km) = list[i];
                     return AnimatedScale(
