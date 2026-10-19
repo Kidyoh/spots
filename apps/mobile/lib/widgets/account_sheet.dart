@@ -48,11 +48,14 @@ class AccountButton extends StatelessWidget {
 Future<void> showAccountSheet(BuildContext context, {String? reason}) {
   return showModalBottomSheet<void>(
     context: context,
+    // sized to its content (not capped at 9/16 of the screen) and scrollable,
+    // so Delete account still fits on short phones
+    isScrollControlled: true,
     builder: (context) {
       final state = AppScope.of(context);
       final user = state.user;
       return SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -110,6 +113,18 @@ Future<void> showAccountSheet(BuildContext context, {String? reason}) {
                     child: const Text('Sign out'),
                   ),
                 ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: state.deletingAccount ? null : () => _confirmDeleteAccount(context),
+                  style: TextButton.styleFrom(foregroundColor: Palette.danger),
+                  child: state.deletingAccount
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Palette.danger),
+                        )
+                      : const Text('Delete account'),
+                ),
               ],
               if (!state.backend.isLive) ...[
                 const SizedBox(height: 14),
@@ -125,6 +140,81 @@ Future<void> showAccountSheet(BuildContext context, {String? reason}) {
       );
     },
   );
+}
+
+/// Confirm, then delete the account and close the sheet. The sheet stays up
+/// (with a spinner) while the request runs; the result arrives as a toast.
+Future<void> _confirmDeleteAccount(BuildContext sheetContext) async {
+  final state = AppScope.read(sheetContext);
+  final confirmed = await showDialog<bool>(
+    context: sheetContext,
+    builder: (context) => DeleteAccountDialog(live: state.backend.isLive),
+  );
+  if (confirmed != true) return;
+  await state.deleteAccount();
+  if (sheetContext.mounted) Navigator.pop(sheetContext);
+}
+
+/// Spells out what deleting the account removes before anything happens.
+class DeleteAccountDialog extends StatelessWidget {
+  const DeleteAccountDialog({super.key, required this.live});
+
+  /// Live accounts lose server data; demo mode only has the phone's lists.
+  final bool live;
+
+  @override
+  Widget build(BuildContext context) {
+    const bullet = TextStyle(fontSize: 14, height: 1.35, color: Palette.inkSoft);
+    Widget item(String text) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('•  ', style: bullet),
+          Expanded(child: Text(text, style: bullet)),
+        ],
+      ),
+    );
+    return AlertDialog(
+      title: const Text('Delete your account?'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: live
+              ? [
+                  const Text('This permanently deletes your Spots account and everything tied to it:', style: bullet),
+                  item('your Want to go list'),
+                  item('the places you\'ve been, with their ratings and notes — they also come off the community list'),
+                  item('your profile name and photo'),
+                  item('people matching on the website: your opt-in, likes and blocks'),
+                  item('feedback you\'ve sent'),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Anonymous usage stats stay, no longer tied to your account. Your Google account isn\'t affected. '
+                    'This can\'t be undone.',
+                    style: bullet,
+                  ),
+                ]
+              : [
+                  const Text(
+                    'Demo mode: this clears your Want to go list and the places you\'ve been, with their ratings '
+                    'and notes, from this phone. This can\'t be undone.',
+                    style: bullet,
+                  ),
+                ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: FilledButton.styleFrom(backgroundColor: Palette.danger, foregroundColor: Palette.bg),
+          child: const Text('Delete account'),
+        ),
+      ],
+    );
+  }
 }
 
 class _Stat extends StatelessWidget {

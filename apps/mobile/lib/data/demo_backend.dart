@@ -175,6 +175,16 @@ class DemoBackend extends Backend {
     _users.add(null);
   }
 
+  /// Nothing leaves the phone in demo mode, so "deleting the account" clears
+  /// the on-device lists and signs the guest out.
+  @override
+  Future<void> deleteAccount() async {
+    final p = await _prefs;
+    await p.remove(_savedKey);
+    await p.remove(_visitsKey);
+    await signOut();
+  }
+
   // ── personal lists, on the device ───────────────────────────────────────
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();

@@ -380,6 +380,30 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool deletingAccount = false;
+
+  /// Delete the account and its data for good, then sign out. Returns false
+  /// (with a toast) if it didn't go through, in which case nothing was deleted.
+  Future<bool> deleteAccount() async {
+    if (deletingAccount) return false;
+    deletingAccount = true;
+    notifyListeners();
+    try {
+      await backend.deleteAccount();
+      user = backend.currentUser;
+      savedIds = [];
+      visits = [];
+      _toasts.add('Your account and its data were deleted');
+      return true;
+    } catch (_) {
+      _toasts.add("Couldn't delete your account — check your connection and try again");
+      return false;
+    } finally {
+      deletingAccount = false;
+      notifyListeners();
+    }
+  }
+
   bool isSaved(String placeId) => savedIds.contains(placeId);
   bool isVisited(String placeId) => visits.any((v) => v.placeId == placeId);
   Visit? visitFor(String placeId) {

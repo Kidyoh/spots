@@ -34,6 +34,12 @@ abstract class Backend {
   Future<void> signIn();
   Future<void> signOut();
 
+  /// Permanently delete the signed-in account and everything tied to it, then
+  /// sign out. Live: the `delete_my_account()` RPC (profile, Want to go,
+  /// visits with their public ratings and notes, matching, feedback; analytics
+  /// rows are kept without the user id). Demo: clears the on-device lists.
+  Future<void> deleteAccount();
+
   /// Place ids on the "Want to go" list, newest first.
   Future<List<String>> fetchSaved();
   Future<void> addSaved(String placeId);

@@ -411,6 +411,7 @@ class _VisitEditorState extends State<_VisitEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final live = AppScope.of(context).backend.isLive;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Stack(
@@ -477,8 +478,18 @@ class _VisitEditorState extends State<_VisitEditor> {
                     controller: _notes,
                     minLines: 2,
                     maxLines: 5,
+                    maxLength: 1000, // visits_notes_len_check
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(hintText: 'Our notes — what to order, which table…'),
+                    // Visits are public reviews (the web's community table),
+                    // so say so where people type them.
+                    decoration: InputDecoration(
+                      hintText: 'Notes — what to order, which table…',
+                      helperText: live
+                          ? 'Shown to other Spots users with your rating'
+                          : 'Demo mode: stays on this phone. In the live app, shown to other Spots users '
+                                'with your rating',
+                      helperMaxLines: 2,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
