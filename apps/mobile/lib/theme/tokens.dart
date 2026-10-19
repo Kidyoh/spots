@@ -24,6 +24,9 @@ abstract final class Palette {
   static const starFill = Color(0xFFC99A3F);
   static const starEmpty = Color(0xFFE0D6C2);
 
+  /// Destructive actions (Delete account). A warm brick red, AA on [bg].
+  static const danger = Color(0xFFA63D2B);
+
   static const accentWash = Color(0x1AE37B33);
   static const press = Color(0x143E5C44);
 

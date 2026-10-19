@@ -139,6 +139,18 @@ class SupabaseBackend extends Backend {
     if (_googleReady) await GoogleSignIn.instance.signOut();
   }
 
+  @override
+  Future<void> deleteAccount() async {
+    await _db.rpc('delete_my_account');
+    // The account is gone, so the server-side logout may fail; the local
+    // session is dropped before that call either way.
+    try {
+      await signOut();
+    } catch (e) {
+      debugPrint('Sign-out after account deletion: $e');
+    }
+  }
+
   String get _uid => _db.auth.currentUser!.id;
 
   // ── want to go ──────────────────────────────────────────────────────────

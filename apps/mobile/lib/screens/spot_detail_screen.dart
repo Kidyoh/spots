@@ -441,10 +441,17 @@ class _YourRating extends StatelessWidget {
       decoration: BoxDecoration(color: Palette.press, borderRadius: BorderRadius.circular(Radii.md)),
       child: Row(
         children: [
-          const Expanded(
-            child: Text(
-              'Our rating',
-              style: TextStyle(fontWeight: FontWeight.w700, color: Palette.green),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Our rating',
+                  style: TextStyle(fontWeight: FontWeight.w700, color: Palette.green),
+                ),
+                if (AppScope.of(context).backend.isLive)
+                  const Text('Shown to other Spots users', style: TextStyle(fontSize: 12, color: Palette.muted)),
+              ],
             ),
           ),
           EditableStars(value: visit.rating, onChanged: onRate, size: 26),
